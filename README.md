@@ -68,7 +68,11 @@ The goal is to reduce friction between thinking and capturing ideas.
 
 ## 📱 Demo
 
-🎬 A short demo video is included (34 seconds) showing:
+🎬 Demo video:
+
+[Download and watch demo](./assets/demo.mp4)
+
+A short demo video is included (34 seconds) showing:
 
 * Recording
 * Transcription
