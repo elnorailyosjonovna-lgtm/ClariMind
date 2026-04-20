@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Audio } from 'expo-av';
 import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { createNote } from '../services/notes';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
@@ -21,6 +22,8 @@ export function AudioRecorder() {
   const [error, setError] = useState<string | null>(null);
   const [ideas, setIdeas] = useState<SavedIdea[]>([]);
   const [showSavedFeedback, setShowSavedFeedback] = useState(false);
+  const [backendMessage, setBackendMessage] = useState<string | null>(null);
+  const [backendError, setBackendError] = useState<string | null>(null);
   const recordingRef = useRef<Audio.Recording | null>(null);
   const savedFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -401,8 +404,23 @@ Keep it clear and concise.`,
       setStructured(structuredText);
       setIsStructuring(false);
 
-      // Save idea with structure
+      // Save idea locally first
       await saveIdea(text, structuredText);
+
+      // Try to save to backend as soon as we have structured output
+      try {
+        await createNote(text, structuredText);
+        setBackendMessage('Saved to backend');
+        setBackendError(null);
+
+        // clear backend message after a short period
+        setTimeout(() => {
+          setBackendMessage(null);
+        }, 6000);
+      } catch (backendSaveError) {
+        console.error('Backend save failed:', backendSaveError);
+        setBackendError('Backend save failed (local copy retained)');
+      }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       console.error('Structure error:', errorMsg);
@@ -532,6 +550,11 @@ Keep it clear and concise.`,
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
+          <View style={styles.header}>
+            <ThemedText type="title" style={styles.appTitle}>ClariMind</ThemedText>
+            <ThemedText style={styles.subtitle}>Capture your ideas instantly</ThemedText>
+          </View>
+
           {isRecording && (
             <View style={styles.statusIndicator}>
               <ThemedText type="title" style={styles.recordingText}>
@@ -550,9 +573,11 @@ Keep it clear and concise.`,
             ]}
           >
             <ThemedText style={styles.buttonText}>
-              {isRecording ? 'Stop Recording' : 'Start Recording'}
+              {isRecording ? 'Stop Recording' : 'Record Note'}
             </ThemedText>
           </Pressable>
+
+          <ThemedText style={styles.helperText}>Tap to record a new voice note</ThemedText>
 
           {isTranscribing && (
             <View style={styles.statusIndicator}>
@@ -565,6 +590,18 @@ Keep it clear and concise.`,
           {error && (
             <View style={styles.errorContainer}>
               <ThemedText style={styles.errorText}>{getDisplayError()}</ThemedText>
+            </View>
+          )}
+
+          {backendMessage && (
+            <View style={styles.savedFeedback}>
+              <ThemedText style={styles.savedFeedbackText}>{backendMessage}</ThemedText>
+            </View>
+          )}
+
+          {backendError && (
+            <View style={styles.errorContainer}>
+              <ThemedText style={styles.errorText}>{backendError}</ThemedText>
             </View>
           )}
 
@@ -598,29 +635,28 @@ Keep it clear and concise.`,
 
           <View style={styles.historySection}>
             <ThemedText type="subtitle" style={styles.historyTitle}>
-              💾 Idea History
+              Recent Notes
             </ThemedText>
             {ideas.length > 0 ? (
               <View>
-                <ThemedText style={styles.historyCount}>
-                  {ideas.length} saved idea{ideas.length !== 1 ? 's' : ''}
-                </ThemedText>
                 <FlatList
-                  data={ideas}
+                  data={ideas.slice(0, 5)} // Show only recent 5
                   keyExtractor={(_, index) => `idea_${index}_${ideas.length}`}
                   renderItem={({ item }) => (
                     <View style={styles.historyItem}>
                       <ThemedText style={styles.historyTime}>
-                        {formatTime(item.timestamp)}
+                        {new Date(item.timestamp).toLocaleDateString()}
                       </ThemedText>
-                      <ThemedText style={styles.historyTranscription}>
+                      <ThemedText style={styles.historyTranscription} numberOfLines={2}>
                         {item.transcription}
                       </ThemedText>
-                      <View style={styles.historyStructuredBox}>
-                        <ThemedText style={styles.historyStructured}>
-                          {item.structured}
-                        </ThemedText>
-                      </View>
+                      {item.structured && (
+                        <View style={styles.historyStructuredBox}>
+                          <ThemedText style={styles.historyStructured} numberOfLines={2}>
+                            {item.structured}
+                          </ThemedText>
+                        </View>
+                      )}
                     </View>
                   )}
                   scrollEnabled={false}
@@ -631,7 +667,7 @@ Keep it clear and concise.`,
             ) : (
               <View style={styles.emptyStateContainer}>
                 <ThemedText style={styles.emptyStateText}>
-                  No saved ideas yet. Start recording to create your first idea!
+                  No saved notes yet. Start recording to create your first note!
                 </ThemedText>
               </View>
             )}
@@ -645,8 +681,7 @@ Keep it clear and concise.`,
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#0F0F10',
   },
   scrollContent: {
     flexGrow: 1,
@@ -655,21 +690,36 @@ const styles = StyleSheet.create({
   },
   content: {
     alignItems: 'center',
-    gap: 24,
-    paddingHorizontal: 16,
+    gap: 20,
+    paddingHorizontal: 20,
     paddingVertical: 16,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  appTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#A1A1A6',
+    textAlign: 'center',
   },
   recordingText: {
     marginBottom: 0,
-    color: '#FF6B6B',
+    color: '#FF453A',
     fontSize: 18,
     fontWeight: '700',
   },
   button: {
     paddingHorizontal: 32,
     paddingVertical: 16,
-    borderRadius: 12,
-    backgroundColor: '#007AFF',
+    borderRadius: 16,
+    backgroundColor: '#2F80ED',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -677,7 +727,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   buttonActive: {
-    backgroundColor: '#FF3333',
+    backgroundColor: '#FF453A',
   },
   buttonDisabled: {
     opacity: 0.5,
@@ -688,16 +738,22 @@ const styles = StyleSheet.create({
     color: 'white',
     letterSpacing: 0.5,
   },
+  helperText: {
+    fontSize: 14,
+    color: '#A1A1A6',
+    textAlign: 'center',
+    marginTop: 8,
+  },
   statusIndicator: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 193, 7, 0.1)',
-    borderLeftWidth: 4,
-    borderLeftColor: '#FFC107',
+    borderRadius: 12,
+    backgroundColor: '#1C1C1E',
+    borderWidth: 1,
+    borderColor: '#2A2A2C',
   },
   loadingText: {
-    color: '#FFC107',
+    color: '#2F80ED',
     marginTop: 0,
     fontSize: 15,
     fontWeight: '600',
@@ -706,12 +762,14 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#FFE5E5',
+    borderRadius: 12,
+    backgroundColor: '#1C1C1E',
+    borderWidth: 1,
+    borderColor: '#2A2A2C',
   },
   errorText: {
     fontSize: 14,
-    color: '#CC0000',
+    color: '#FF453A',
     lineHeight: 20,
   },
   transcriptionContainer: {
@@ -719,22 +777,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#1C1C1E',
     maxWidth: '100%',
-    borderLeftWidth: 4,
-    borderLeftColor: '#1976D2',
+    borderWidth: 1,
+    borderColor: '#2A2A2C',
   },
   sectionTitle: {
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 12,
     letterSpacing: 0.3,
+    color: '#2F80ED',
   },
   transcriptionText: {
     marginTop: 0,
     fontSize: 15,
     lineHeight: 22,
-    color: '#0D47A1',
+    color: '#FFFFFF',
     fontWeight: '500',
   },
   structuredContainer: {
@@ -742,116 +801,100 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#E8F5E9',
+    backgroundColor: '#1C1C1E',
     maxWidth: '100%',
-    borderLeftWidth: 4,
-    borderLeftColor: '#388E3C',
+    borderWidth: 1,
+    borderColor: '#2A2A2C',
   },
   structuredText: {
     marginTop: 0,
     fontSize: 15,
     lineHeight: 22,
-    color: '#1B5E20',
+    color: '#FFFFFF',
     fontWeight: '500',
   },
   savedFeedback: {
     marginTop: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: '#C8E6C9',
+    borderRadius: 12,
+    backgroundColor: '#1C1C1E',
     alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: '#2A2A2C',
   },
   savedFeedbackText: {
     fontSize: 13,
-    color: '#2E7D32',
+    color: '#2F80ED',
     fontWeight: '600',
-  },
-  ideasCountContainer: {
-    marginTop: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: '#F3E5F5',
-  },
-  ideasCountText: {
-    fontSize: 12,
-    color: '#7B1FA2',
-    fontWeight: '500',
   },
   historySection: {
     marginTop: 32,
     width: '100%',
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     marginBottom: 32,
   },
   historyTitle: {
     marginBottom: 16,
-    color: '#333',
-    fontSize: 16,
+    color: '#FFFFFF',
+    fontSize: 18,
     fontWeight: '700',
     letterSpacing: 0.3,
-  },
-  historyCount: {
-    marginBottom: 12,
-    color: '#666',
-    fontSize: 12,
-    fontWeight: '600',
+    textAlign: 'center',
   },
   emptyStateContainer: {
     paddingHorizontal: 16,
     paddingVertical: 24,
     borderRadius: 12,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#1C1C1E',
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderStyle: 'dashed',
+    borderColor: '#2A2A2C',
     alignItems: 'center',
   },
   emptyStateText: {
     fontSize: 14,
-    color: '#999',
+    color: '#A1A1A6',
     textAlign: 'center',
     lineHeight: 20,
     fontWeight: '500',
   },
   historyList: {
-    borderRadius: 8,
-    backgroundColor: '#fafafa',
+    borderRadius: 12,
+    backgroundColor: '#1C1C1E',
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: '#2A2A2C',
   },
   historyItem: {
-    paddingHorizontal: 14,
-    paddingVertical: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E8E8E8',
+    borderBottomColor: '#2A2A2C',
   },
   historyTime: {
-    fontSize: 11,
-    color: '#999',
-    marginBottom: 10,
+    fontSize: 12,
+    color: '#A1A1A6',
+    marginBottom: 8,
     fontWeight: '600',
     letterSpacing: 0.2,
   },
   historyTranscription: {
     fontSize: 14,
-    color: '#333',
-    marginBottom: 10,
+    color: '#FFFFFF',
+    marginBottom: 8,
     lineHeight: 20,
     fontWeight: '500',
   },
   historyStructuredBox: {
-    backgroundColor: '#F1F8E9',
+    backgroundColor: '#0F0F10',
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 8,
-    borderLeftWidth: 3,
-    borderLeftColor: '#4CAF50',
+    borderWidth: 1,
+    borderColor: '#2A2A2C',
   },
   historyStructured: {
     fontSize: 13,
-    color: '#1B5E20',
+    color: '#A1A1A6',
     lineHeight: 18,
     fontWeight: '500',
   },
