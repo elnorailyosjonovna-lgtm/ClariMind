@@ -164,7 +164,7 @@ export default function NotesScreen() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#0a84ff" />
+        <ActivityIndicator size="large" color="#3B82F6" />
         <Text style={styles.infoText}>Loading notes...</Text>
       </View>
     );
@@ -180,7 +180,7 @@ export default function NotesScreen() {
       <TextInput
         style={styles.searchInput}
         placeholder="Search notes..."
-        placeholderTextColor="#A1A1A6"
+        placeholderTextColor="#9CA3AF"
         value={searchQuery}
         onChangeText={handleSearch}
       />
@@ -210,7 +210,7 @@ export default function NotesScreen() {
               {item.transcript}
             </Text>
 
-            <Text style={styles.label}>Structured</Text>
+            <Text style={styles.label}>AI Summary</Text>
             <Text style={styles.text} numberOfLines={3}>
               {item.structured_data || 'No structured data'}
             </Text>
@@ -255,7 +255,7 @@ export default function NotesScreen() {
               style={styles.modalInput}
               multiline
               placeholder="Edit structured note..."
-              placeholderTextColor="#A1A1A6"
+              placeholderTextColor="#9CA3AF"
               value={editedStructuredData}
               onChangeText={setEditedStructuredData}
               textAlignVertical="top"
@@ -300,7 +300,7 @@ export default function NotesScreen() {
             <Text style={styles.label}>Transcript</Text>
             <Text style={styles.modalText}>{selectedNote?.transcript}</Text>
 
-            <Text style={[styles.label, styles.modalSectionLabel]}>Structured</Text>
+            <Text style={[styles.label, styles.modalSectionLabel]}>AI Summary</Text>
             <Text style={styles.modalText}>
               {selectedNote?.structured_data || 'No structured data'}
             </Text>
@@ -323,19 +323,19 @@ export default function NotesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F10',
+    backgroundColor: '#0B1020',
     padding: 20,
   },
   center: {
     flex: 1,
-    backgroundColor: '#0F0F10',
+    backgroundColor: '#0B1020',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   title: {
     color: '#FFFFFF',
@@ -345,83 +345,87 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   subtitle: {
-    color: '#A1A1A6',
+    color: '#9CA3AF',
     fontSize: 16,
     textAlign: 'center',
   },
   searchInput: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: '#151B2F',
     color: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#2A2A2C',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 16,
+    borderColor: 'rgba(255,255,255,0.08)',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 20,
+    fontSize: 16,
   },
   buttonWrap: {
     marginBottom: 20,
   },
   infoText: {
-    color: '#A1A1A6',
+    color: '#9CA3AF',
     marginTop: 12,
     textAlign: 'center',
   },
   errorText: {
-    color: '#FF453A',
-    marginBottom: 12,
-    backgroundColor: '#1C1C1E',
-    padding: 12,
-    borderRadius: 12,
+    color: '#FF6B6B',
+    marginBottom: 16,
+    backgroundColor: '#151B2F',
+    padding: 16,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#2A2A2C',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   card: {
-    backgroundColor: '#1C1C1E',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+    backgroundColor: '#151B2F',
+    padding: 20,
+    borderRadius: 20,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#2A2A2C',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   time: {
-    color: '#A1A1A6',
+    color: '#9CA3AF',
     fontSize: 12,
     marginBottom: 12,
   },
   label: {
-    color: '#2F80ED',
-    fontWeight: 'bold',
-    marginTop: 12,
-    marginBottom: 6,
-    fontSize: 14,
+    color: '#9CA3AF',
+    fontWeight: '700',
+    marginTop: 16,
+    marginBottom: 8,
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.7,
   },
   text: {
     color: '#FFFFFF',
-    lineHeight: 20,
+    lineHeight: 22,
+    fontSize: 14,
   },
   actionsRow: {
     flexDirection: 'row',
-    marginTop: 16,
-    gap: 10,
+    marginTop: 20,
+    gap: 12,
   },
   editButton: {
     flex: 1,
-    backgroundColor: '#2F80ED',
-    borderRadius: 10,
-    paddingVertical: 10,
+    backgroundColor: '#3B82F6',
+    borderRadius: 16,
+    paddingVertical: 12,
     alignItems: 'center',
   },
   editButtonText: {
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 14,
   },
   deleteButton: {
     flex: 1,
-    backgroundColor: '#FF453A',
-    borderRadius: 10,
-    paddingVertical: 10,
+    backgroundColor: '#FF6B6B',
+    borderRadius: 16,
+    paddingVertical: 12,
     alignItems: 'center',
   },
   deleteButtonDisabled: {
@@ -429,11 +433,11 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 14,
   },
   cardPressed: {
-    backgroundColor: '#232326',
+    backgroundColor: 'rgba(21,27,47,0.8)',
   },
   emptyList: {
     flexGrow: 1,
@@ -441,67 +445,68 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(11,16,32,0.8)',
     justifyContent: 'center',
     padding: 20,
   },
   modalCard: {
-    backgroundColor: '#1C1C1E',
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: '#151B2F',
+    borderRadius: 24,
+    padding: 24,
     borderWidth: 1,
-    borderColor: '#2A2A2C',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   modalTitle: {
     color: '#FFFFFF',
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   modalText: {
     color: '#FFFFFF',
     fontSize: 14,
-    lineHeight: 22,
-    marginBottom: 14,
+    lineHeight: 24,
+    marginBottom: 16,
   },
   modalSectionLabel: {
-    marginTop: 16,
-    marginBottom: 6,
+    marginTop: 20,
+    marginBottom: 8,
   },
   modalInput: {
-    backgroundColor: '#0F0F10',
+    backgroundColor: '#0B1020',
     color: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#2A2A2C',
-    padding: 14,
+    borderColor: 'rgba(255,255,255,0.08)',
+    padding: 16,
     minHeight: 160,
-    marginBottom: 16,
+    marginBottom: 20,
+    fontSize: 14,
   },
   modalButtonsRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#2A2A2C',
-    borderRadius: 10,
-    paddingVertical: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 16,
+    paddingVertical: 14,
     alignItems: 'center',
   },
   cancelButtonText: {
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   saveButton: {
     flex: 1,
-    backgroundColor: '#2F80ED',
-    borderRadius: 10,
-    paddingVertical: 12,
+    backgroundColor: '#3B82F6',
+    borderRadius: 16,
+    paddingVertical: 14,
     alignItems: 'center',
   },
   saveButtonText: {
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

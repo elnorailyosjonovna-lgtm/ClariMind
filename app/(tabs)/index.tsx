@@ -1,6 +1,6 @@
 import { AudioRecorder } from '@/components/audio-recorder';
 import { getNotes } from '@/services/notes';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 
 interface NoteItem {
@@ -37,14 +37,36 @@ export default function HomeScreen() {
     }
   };
 
+  const stats = useMemo(() => {
+    const totalNotes = notes.length;
+    const ideasThisWeek = notes.filter((note) => {
+      const noteDate = new Date(note.created_at);
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      return noteDate >= sevenDaysAgo;
+    }).length;
+    return { totalNotes, ideasThisWeek };
+  }, [notes]);
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>ClariMind</Text>
-        <Text style={styles.subtitle}>Capture your ideas instantly</Text>
+      <View style={styles.heroCard}>
+        <Text style={styles.greeting}>Hi Elnora 👋</Text>
+        <Text style={styles.heroSubtitle}>Capture and organize ideas instantly</Text>
+
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Total Notes</Text>
+            <Text style={styles.statValue}>{stats.totalNotes}</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Ideas This Week</Text>
+            <Text style={styles.statValue}>{stats.ideasThisWeek}</Text>
+          </View>
+        </View>
       </View>
 
-      <View style={styles.recorderWrapper}>
+      <View style={styles.recorderCard}>
         <AudioRecorder hideHeader embedded />
       </View>
 
@@ -52,7 +74,7 @@ export default function HomeScreen() {
 
       {loading ? (
         <View style={styles.emptyState}>
-          <ActivityIndicator size="small" color="#0a84ff" />
+          <ActivityIndicator size="small" color="#3B82F6" />
           <Text style={styles.infoText}>Loading recent notes...</Text>
         </View>
       ) : error ? (
@@ -89,49 +111,88 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b1220',
+    backgroundColor: '#0B1020',
     padding: 20,
   },
-  header: {
+  heroCard: {
+    backgroundColor: '#151B2F',
+    borderRadius: 24,
+    padding: 24,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
-  title: {
-    color: '#ffffff',
-    fontSize: 34,
+  greeting: {
+    color: '#FFFFFF',
+    fontSize: 32,
     fontWeight: '800',
     marginBottom: 6,
   },
-  subtitle: {
-    color: '#a1a1b8',
+  heroSubtitle: {
+    color: '#9CA3AF',
     fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 22,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  statLabel: {
+    color: '#9CA3AF',
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.7,
+    marginBottom: 8,
+  },
+  statValue: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: '800',
+  },
+  recorderCard: {
+    backgroundColor: '#151B2F',
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   sectionTitle: {
-    color: '#cbd5ff',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   notesList: {
     marginBottom: 20,
   },
   notesListContent: {
-    paddingBottom: 12,
+    paddingBottom: 24,
   },
   noteCard: {
-    backgroundColor: '#12182f',
-    borderColor: '#172146',
+    backgroundColor: '#151B2F',
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 14,
     borderWidth: 1,
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 12,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   noteDate: {
-    color: '#8fa4f1',
-    fontSize: 13,
+    color: '#9CA3AF',
+    fontSize: 12,
     marginBottom: 6,
   },
   noteLabel: {
-    color: '#94a3b8',
+    color: '#9CA3AF',
     fontSize: 12,
     marginTop: 10,
     marginBottom: 2,
@@ -139,7 +200,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   noteText: {
-    color: '#e2e8f0',
+    color: '#FFFFFF',
     fontSize: 14,
     lineHeight: 20,
   },
@@ -148,21 +209,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   infoText: {
-    color: '#94a3b8',
+    color: '#9CA3AF',
     fontSize: 14,
     marginTop: 8,
   },
   emptyText: {
-    color: '#94a3b8',
+    color: '#9CA3AF',
     fontSize: 14,
     marginBottom: 16,
   },
   errorText: {
-    color: '#ff6b6b',
+    color: '#FF6B6B',
     fontSize: 14,
     marginBottom: 16,
-  },
-  recorderWrapper: {
-    marginBottom: 20,
   },
 });
