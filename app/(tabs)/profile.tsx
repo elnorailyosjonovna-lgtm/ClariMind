@@ -1,6 +1,7 @@
 import { getCurrentUser, logoutUser } from '@/services/auth';
+import { getNotes } from '@/services/notes';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -21,6 +22,7 @@ interface User {
 export default function ProfileScreen() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [notes, setNotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [loggingOut, setLoggingOut] = useState(false);
@@ -36,6 +38,10 @@ export default function ProfileScreen() {
 
       const userData = await getCurrentUser();
       setUser(userData);
+
+      // Load notes for stats
+      const notesData = await getNotes();
+      setNotes(notesData);
     } catch (err: any) {
       if (err?.response?.status === 401) {
         await logoutUser();
@@ -65,10 +71,27 @@ export default function ProfileScreen() {
     }
   };
 
+  const stats = useMemo(() => {
+    if (!user || !notes.length) return null;
+
+    const totalNotes = notes.length;
+    const accountAge = user.created_at
+      ? Math.floor((Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24))
+      : 0;
+    const notesThisMonth = notes.filter((note) => {
+      const noteDate = new Date(note.created_at);
+      const monthAgo = new Date();
+      monthAgo.setMonth(monthAgo.getMonth() - 1);
+      return noteDate >= monthAgo;
+    }).length;
+
+    return { totalNotes, accountAge, notesThisMonth };
+  }, [user, notes]);
+
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#0a84ff" />
+        <ActivityIndicator size="large" color="#3B82F6" />
         <Text style={styles.infoText}>Loading profile...</Text>
       </View>
     );
@@ -84,32 +107,60 @@ export default function ProfileScreen() {
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         {user && (
-          <View style={styles.userCard}>
-            <View style={styles.avatarContainer}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{user.full_name.charAt(0).toUpperCase()}</Text>
+          <>
+            <View style={styles.userCard}>
+              <View style={styles.avatarContainer}>
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>{user.full_name.charAt(0).toUpperCase()}</Text>
+                </View>
               </View>
-            </View>
 
-            <View style={styles.userInfo}>
-              <Text style={styles.label}>Name</Text>
-              <Text style={styles.value}>{user.full_name}</Text>
-            </View>
-
-            <View style={styles.userInfo}>
-              <Text style={styles.label}>Email</Text>
-              <Text style={styles.value}>{user.email}</Text>
-            </View>
-
-            {user.created_at ? (
               <View style={styles.userInfo}>
-                <Text style={styles.label}>Member Since</Text>
-                <Text style={styles.value}>
-                  {new Date(user.created_at).toLocaleDateString()}
-                </Text>
+                <Text style={styles.label}>Name</Text>
+                <Text style={styles.value}>{user.full_name}</Text>
               </View>
-            ) : null}
-          </View>
+
+              <View style={styles.userInfo}>
+                <Text style={styles.label}>Email</Text>
+                <Text style={styles.value}>{user.email}</Text>
+              </View>
+
+              {user.created_at ? (
+                <View style={styles.userInfo}>
+                  <Text style={styles.label}>Member Since</Text>
+                  <Text style={styles.value}>
+                    {new Date(user.created_at).toLocaleDateString()}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+
+            {stats && (
+              <View style={styles.statsContainer}>
+                <Text style={styles.sectionTitle}>Your Stats</Text>
+                <View style={styles.statsRow}>
+                  <View style={styles.statCard}>
+                    <Text style={styles.statLabel}>Total Notes</Text>
+                    <Text style={styles.statValue}>{stats.totalNotes}</Text>
+                  </View>
+                  <View style={styles.statCard}>
+                    <Text style={styles.statLabel}>This Month</Text>
+                    <Text style={styles.statValue}>{stats.notesThisMonth}</Text>
+                  </View>
+                </View>
+                <View style={styles.statsRow}>
+                  <View style={styles.statCard}>
+                    <Text style={styles.statLabel}>Account Age</Text>
+                    <Text style={styles.statValue}>{stats.accountAge}d</Text>
+                  </View>
+                  <View style={styles.statCard}>
+                    <Text style={styles.statLabel}>Avg Daily</Text>
+                    <Text style={styles.statValue}>{stats.accountAge > 0 ? Math.round(stats.totalNotes / stats.accountAge) : 0}</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+          </>
         )}
 
         <Pressable
@@ -131,7 +182,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F10',
+    backgroundColor: '#0B1020',
   },
   scrollContent: {
     flexGrow: 1,
@@ -140,7 +191,7 @@ const styles = StyleSheet.create({
   },
   center: {
     flex: 1,
-    backgroundColor: '#0F0F10',
+    backgroundColor: '#0B1020',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
@@ -155,50 +206,86 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   userCard: {
-    backgroundColor: '#1C1C1E',
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: '#151B2F',
+    borderRadius: 24,
+    padding: 24,
     marginBottom: 32,
     borderWidth: 1,
-    borderColor: '#2A2A2C',
+    borderColor: 'rgba(255,255,255,0.08)',
     alignItems: 'center',
   },
   avatarContainer: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#2F80ED',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#3B82F6',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 3,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   avatarText: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
   userInfo: {
     width: '100%',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   label: {
     fontSize: 12,
-    color: '#A1A1A6',
-    fontWeight: '600',
-    marginBottom: 4,
+    color: '#9CA3AF',
+    fontWeight: '700',
+    marginBottom: 6,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.7,
   },
   value: {
     fontSize: 16,
     color: '#FFFFFF',
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  statsContainer: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 16,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 12,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  statLabel: {
+    color: '#9CA3AF',
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.7,
+    marginBottom: 8,
+  },
+  statValue: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '800',
   },
   logoutButton: {
-    backgroundColor: '#FF453A',
-    borderRadius: 16,
+    backgroundColor: '#FF6B6B',
+    borderRadius: 20,
     padding: 16,
     alignItems: 'center',
   },
@@ -208,21 +295,21 @@ const styles = StyleSheet.create({
   logoutButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   errorText: {
-    color: '#FF453A',
+    color: '#FF6B6B',
     fontSize: 14,
     marginBottom: 16,
     textAlign: 'center',
-    backgroundColor: '#1C1C1E',
-    padding: 12,
-    borderRadius: 12,
+    backgroundColor: '#151B2F',
+    padding: 16,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#2A2A2C',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   infoText: {
-    color: '#A1A1A6',
+    color: '#9CA3AF',
     textAlign: 'center',
   },
 });
