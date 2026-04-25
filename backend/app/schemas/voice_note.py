@@ -7,6 +7,10 @@ class VoiceNoteCreate(BaseModel):
     structured_data: str | None = None
 
 
+class VoiceNoteUpdate(BaseModel):
+    structured_data: str | None = None
+
+
 class VoiceNoteResponse(BaseModel):
     id: int
     transcript: str

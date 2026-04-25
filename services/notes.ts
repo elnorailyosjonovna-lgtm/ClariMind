@@ -33,3 +33,33 @@ export async function getNotes() {
 
   return response.data;
 }
+
+export async function deleteNote(noteId: number) {
+  const token = await AsyncStorage.getItem(TOKEN_KEY);
+
+  const response = await api.delete(`/notes/${noteId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+}
+
+export async function updateNote(noteId: number, structuredData: string) {
+  const token = await AsyncStorage.getItem(TOKEN_KEY);
+
+  const response = await api.put(
+    `/notes/${noteId}`,
+    {
+      structured_data: structuredData,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+}

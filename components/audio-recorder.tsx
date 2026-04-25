@@ -12,7 +12,12 @@ interface SavedIdea {
   timestamp: number;
 }
 
-export function AudioRecorder() {
+interface AudioRecorderProps {
+  hideHeader?: boolean;
+  embedded?: boolean;
+}
+
+export function AudioRecorder({ hideHeader = false, embedded = false }: AudioRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isStructuring, setIsStructuring] = useState(false);
@@ -29,15 +34,17 @@ export function AudioRecorder() {
 
   // Load saved ideas on component mount
   useEffect(() => {
-    loadIdeas();
-    
-    // Cleanup timeout on unmount
+    if (!embedded) {
+      loadIdeas();
+    }
+
     return () => {
       if (savedFeedbackTimeoutRef.current) {
         clearTimeout(savedFeedbackTimeoutRef.current);
       }
     };
-  }, []);
+  }, [embedded]);
+
 
   const loadIdeas = async () => {
     try {
@@ -547,13 +554,15 @@ Keep it clear and concise.`,
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, embedded && styles.embeddedContainer]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <View style={styles.header}>
-            <ThemedText type="title" style={styles.appTitle}>ClariMind</ThemedText>
-            <ThemedText style={styles.subtitle}>Capture your ideas instantly</ThemedText>
-          </View>
+          {!hideHeader && (
+            <View style={styles.header}>
+              <ThemedText type="title" style={styles.appTitle}>ClariMind</ThemedText>
+              <ThemedText style={styles.subtitle}>Capture your ideas instantly</ThemedText>
+            </View>
+          )}
 
           {isRecording && (
             <View style={styles.statusIndicator}>
@@ -633,45 +642,47 @@ Keep it clear and concise.`,
             </View>
           )}
 
-          <View style={styles.historySection}>
-            <ThemedText type="subtitle" style={styles.historyTitle}>
-              Recent Notes
-            </ThemedText>
-            {ideas.length > 0 ? (
-              <View>
-                <FlatList
-                  data={ideas.slice(0, 5)} // Show only recent 5
-                  keyExtractor={(_, index) => `idea_${index}_${ideas.length}`}
-                  renderItem={({ item }) => (
-                    <View style={styles.historyItem}>
-                      <ThemedText style={styles.historyTime}>
-                        {new Date(item.timestamp).toLocaleDateString()}
-                      </ThemedText>
-                      <ThemedText style={styles.historyTranscription} numberOfLines={2}>
-                        {item.transcription}
-                      </ThemedText>
-                      {item.structured && (
-                        <View style={styles.historyStructuredBox}>
-                          <ThemedText style={styles.historyStructured} numberOfLines={2}>
-                            {item.structured}
-                          </ThemedText>
-                        </View>
-                      )}
-                    </View>
-                  )}
-                  scrollEnabled={false}
-                  nestedScrollEnabled={false}
-                  style={styles.historyList}
-                />
-              </View>
-            ) : (
-              <View style={styles.emptyStateContainer}>
-                <ThemedText style={styles.emptyStateText}>
-                  No saved notes yet. Start recording to create your first note!
-                </ThemedText>
-              </View>
-            )}
-          </View>
+          {!embedded && (
+            <View style={styles.historySection}>
+              <ThemedText type="subtitle" style={styles.historyTitle}>
+                Recent Notes
+              </ThemedText>
+              {ideas.length > 0 ? (
+                <View>
+                  <FlatList
+                    data={ideas.slice(0, 5)}
+                    keyExtractor={(_, index) => `idea_${index}_${ideas.length}`}
+                    renderItem={({ item }) => (
+                      <View style={styles.historyItem}>
+                        <ThemedText style={styles.historyTime}>
+                          {new Date(item.timestamp).toLocaleDateString()}
+                        </ThemedText>
+                        <ThemedText style={styles.historyTranscription} numberOfLines={2}>
+                          {item.transcription}
+                        </ThemedText>
+                        {item.structured && (
+                          <View style={styles.historyStructuredBox}>
+                            <ThemedText style={styles.historyStructured} numberOfLines={2}>
+                              {item.structured}
+                            </ThemedText>
+                          </View>
+                        )}
+                      </View>
+                    )}
+                    scrollEnabled={false}
+                    nestedScrollEnabled={false}
+                    style={styles.historyList}
+                  />
+                </View>
+              ) : (
+                <View style={styles.emptyStateContainer}>
+                  <ThemedText style={styles.emptyStateText}>
+                    No saved notes yet. Start recording to create your first note!
+                  </ThemedText>
+                </View>
+              )}
+            </View>
+          )}
         </View>
       </ScrollView>
     </ThemedView>
@@ -681,6 +692,10 @@ Keep it clear and concise.`,
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#0F0F10',
+  },
+  embeddedContainer: {
+    flex: 0,
     backgroundColor: '#0F0F10',
   },
   scrollContent: {
