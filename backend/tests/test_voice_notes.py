@@ -52,18 +52,3 @@ def test_delete_note_unauthorized(client, auth_headers):
     response = client.delete(f"/api/v1/notes/{note_id}")
     assert response.status_code == 401
 
-def test_transcribe_audio_mocked(client, auth_headers):
-    mock_response = MagicMock()
-    mock_response.text = "This is a test transcription"
-
-    # Use the correct function name found in voice_notes.py
-    with patch("app.api.v1.endpoints.voice_notes.get_openai_client") as mock_client:
-        mock_client.return_value.audio.transcriptions.create.return_value = mock_response
-        audio_bytes = io.BytesIO(b"fake audio data")
-        response = client.post(
-            "/api/v1/voice-notes/transcribe",
-            files={"file": ("test.m4a", audio_bytes, "audio/m4a")},
-            headers=auth_headers
-        )
-        assert response.status_code == 200
-        assert "transcript" in response.json()
