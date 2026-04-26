@@ -1,7 +1,7 @@
 import { AudioRecorder } from '@/components/audio-recorder';
 import { getNotes } from '@/services/notes';
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, StyleSheet, Text, View } from 'react-native';
 
 interface NoteItem {
   id: number;
@@ -51,8 +51,17 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.heroCard}>
-        <Text style={styles.greeting}>Hi Elnora 👋</Text>
-        <Text style={styles.heroSubtitle}>Capture and organize ideas instantly</Text>
+        <View style={styles.greetingRow}>
+          <Image
+            source={require('@/assets/images/icon.png')}
+            style={styles.heroLogo}
+            resizeMode="contain"
+          />
+          <View style={styles.greetingText}>
+            <Text style={styles.greeting}>Hi Elnora 👋</Text>
+            <Text style={styles.heroSubtitle}>Capture and organize ideas instantly</Text>
+          </View>
+        </View>
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
@@ -66,9 +75,7 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <View style={styles.recorderCard}>
-        <AudioRecorder hideHeader embedded />
-      </View>
+      <AudioRecorder hideHeader embedded />
 
       <Text style={styles.sectionTitle}>Recent Notes</Text>
 
@@ -122,6 +129,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
+  greetingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 22,
+  },
+  heroLogo: {
+    width: 48,
+    height: 48,
+    marginRight: 16,
+  },
+  greetingText: {
+    flex: 1,
+  },
   greeting: {
     color: '#FFFFFF',
     fontSize: 32,
@@ -158,19 +178,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '800',
   },
-  recorderCard: {
-    backgroundColor: '#151B2F',
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-  },
+
   sectionTitle: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 16,
+    marginTop: 24,
   },
   notesList: {
     marginBottom: 20,

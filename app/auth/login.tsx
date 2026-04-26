@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -50,8 +51,13 @@ export default function LoginScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
+          <Image
+            source={require('@/assets/images/icon.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in to your account</Text>
+          <Text style={styles.subtitle}>Capture ideas instantly</Text>
         </View>
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -115,6 +121,11 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 40,
     alignItems: 'center',
+  },
+  logo: {
+    width: 170,
+    height: 170,
+    marginBottom: 20,
   },
   title: {
     fontSize: 28,
