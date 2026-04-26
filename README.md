@@ -1,146 +1,246 @@
-# 🎤 AI Voice-to-Idea App
+# ClariMind 🎤🧠
 
-An AI-powered mobile app that converts messy spoken thoughts into clear, structured ideas.
+**AI-Powered Voice Notes and Idea Structuring Mobile Application**
 
-## 🚀 Overview
+ClariMind is a full-stack mobile productivity application that transforms spoken thoughts into structured actionable ideas using AI.
 
-This app allows users to:
+It helps users quickly capture ideas through voice, transcribe them, organize them into structured notes, and store them for later retrieval.
+
+---
+
+# 🚀 Overview
+
+ClariMind reduces friction between thinking and capturing ideas.
+
+Users can:
 
 * Record voice notes instantly
 * Convert speech to text using AI
-* Transform raw thoughts into structured ideas
-* Save and revisit past ideas
-
-The goal is to reduce friction between thinking and capturing ideas.
-
----
-
-## ✨ Features
-
-* 🎤 **Voice Recording**
-
-  * One-tap recording
-  * Fast and simple interaction
-
-* 📝 **Speech-to-Text**
-
-  * Converts audio into text using AI
-
-* 🧠 **AI Structuring**
-
-  * Turns raw thoughts into:
-
-    * Idea
-    * Features
-    * Purpose
-    * Next Steps
-
-* 💾 **Local Storage**
-
-  * Saves ideas on the device
-
-* 📜 **Idea History**
-
-  * View all past ideas
-  * Scrollable list
-
-* ⚡ **Real-time Feedback**
-
-  * Recording / Transcribing / Structuring states
-
-* ⚠️ **Error Handling**
-
-  * User-friendly error messages
-  * Stable experience
+* Automatically structure raw thoughts into organized notes
+* Save, edit, and manage ideas
+* Access notes through a secure authenticated account
 
 ---
 
-## 🛠 Tech Stack
+# ✨ Features
 
-* **React Native (Expo)**
-* **JavaScript / TypeScript**
-* **OpenAI API**
+## 🎤 Voice Capture
 
-  * Speech-to-text
-  * Text structuring
+* One-tap voice recording
+* Fast audio note capture
+* Real-time recording status feedback
+
+## 📝 AI Transcription
+
+* Speech-to-text transcription using AI
+* Converts spoken ideas into editable text
+
+## 🧠 AI Idea Structuring
+
+Transforms raw thoughts into:
+
+* Idea
+* Features
+* Purpose
+* Next Steps
+
+## 🔐 User Authentication
+
+* Register/Login system
+* Protected note access
+* Token-based authentication
+
+## 📚 Notes Management (CRUD)
+
+* Create notes
+* View notes
+* Edit notes
+* Delete notes
+
+## 💾 Persistent Storage
+
+* Notes stored in database
+* User-specific note retrieval
+
+## 🧪 Automated Testing
+
+* Backend test suite with **10 passing tests**
+* Authentication tests
+* Authorization tests
+* Notes CRUD endpoint tests
 
 ---
 
-## 📱 Demo
+# 🏗 System Architecture
 
-🎬 Demo video:
-
-[Download and watch demo](./assets/demo.mp4)
-
-A short demo video is included (34 seconds) showing:
-
-* Recording
-* Transcription
-* Structured output
-* Idea history
-
----
-
-## ⚙️ Setup & Run
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/elnorailyosjonovna-lgtm/ai-voice-notes
-cd ai-voice-notes
+```text
+React Native (Expo Mobile App)
+        ↓
+FastAPI REST Backend
+        ↓
+PostgreSQL Database
+        ↓
+OpenAI APIs (Transcription + Structuring)
 ```
 
-### 2. Install dependencies
+---
+
+# 🛠 Tech Stack
+
+## Frontend
+
+* TypeScript
+* React Native
+* Expo
+* Expo Router
+* Axios
+* AsyncStorage
+
+## Backend
+
+* Python
+* FastAPI
+* SQLAlchemy
+* PostgreSQL
+* Uvicorn
+* Pytest
+
+## AI Integration
+
+* OpenAI Whisper (Speech-to-Text)
+* OpenAI GPT (Idea Structuring)
+
+---
+
+# 📱 Application Screens
+
+Includes:
+
+* Login / Registration
+* Dashboard Home
+* Voice Recorder
+* Notes Management
+* User Profile
+
+---
+
+# 🎬 Demo
+
+Demo video:
+
+```text
+assets/demo.mp4
+```
+
+Shows:
+
+* Recording workflow
+* AI transcription
+* Structured output
+* Note saving
+* Notes management
+
+---
+
+# ⚙️ Setup
+
+## Clone Repository
+
+```bash
+git clone https://github.com/elnorailyosjonovna-lgtm/ClariMind.git
+cd ClariMind
+```
+
+---
+
+## Frontend Setup
 
 ```bash
 npm install
-```
-
-### 3. Add environment variables
-
-Create a `.env` file:
-
-```env
-EXPO_PUBLIC_OPENAI_API_KEY=your_api_key_here
-```
-
-### 4. Run the app
-
-```bash
 npx expo start
 ```
 
-Then open with:
+Run in:
 
-* Expo Go (mobile)
-* or emulator
-
----
-
-## ⚠️ Notes
-
-* This is an MVP (Minimum Viable Product)
-* API usage is pay-as-you-go (OpenAI)
-* Auto recharge is disabled for safety
+* Expo Go
+* Android Emulator
 
 ---
 
-## 🧠 Future Improvements
+## Backend Setup
 
-* Idea search
-* Delete / favorite ideas
-* Overthinking mode (idea filtering)
-* Cloud sync
-* User accounts
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+API docs:
+
+```text
+http://localhost:8000/docs
+```
 
 ---
 
-## 👤 Author
+## Environment Variables
 
-Built as a personal project to explore AI-powered productivity tools.
+Create `.env`:
+
+```env
+OPENAI_API_KEY=your_key_here
+```
 
 ---
 
-## 📄 License
+# ✅ Testing
 
-MIT License
+Run backend tests:
+
+```bash
+pytest tests/ -v
+```
+
+Current result:
+
+```text
+10 tests passing
+```
+
+---
+
+# 📌 Project Scope
+
+This project was developed as a **Final Year Project (MVP)** demonstrating:
+
+* Full-stack mobile development
+* AI integration
+* Backend API design
+* Database persistence
+* Authentication
+* Software testing
+* UI/UX design
+
+---
+
+# 🔮 Future Improvements
+
+Potential extensions:
+
+* Search and filtering
+* Idea tagging
+* Export notes
+* Cloud synchronization
+* Team/shared notes
+* Deployed backend
+* Production mobile release
+
+---
+
+# 👤 Author
+
+Developed by Elnora Normuratova as a Business Information Systems final-year project.
+
+
